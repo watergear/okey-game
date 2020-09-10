@@ -2023,7 +2023,7 @@ TEST(OKeyGame, TimeCostThreeLongSequence)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-TEST(OKeyGame, TimeCostThreeDiffLongSequence)
+TEST(OKeyGame, TimeCostThreeLongSequence_2)
 {
 	Deck cards =
 		{{4,1},{5,1},{6,1},{7,1},{8,1},{9,1},{10,1},{4,1},{5,1},{6,1},{7,1},{8,1},{9,1},{10,1},{4,2},{5,2},{6,2},{7,2},{8,2},{9,2},{10,2}};
@@ -2037,7 +2037,7 @@ TEST(OKeyGame, TimeCostThreeDiffLongSequence)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-TEST(OKeyGame, TimeCostThreeTotallyDiffLongSequence)
+TEST(OKeyGame, TimeCostThreeDiffLongSequence)
 {
 	Deck cards =
 		{{4,1},{5,1},{6,1},{7,1},{8,1},{9,1},{10,1},{4,2},{5,2},{6,2},{7,2},{8,2},{9,2},{10,2},{4,3},{5,3},{6,3},{7,3},{8,3},{9,3},{10,3}};
@@ -2045,6 +2045,20 @@ TEST(OKeyGame, TimeCostThreeTotallyDiffLongSequence)
 	vector<Deck> play_decks_to_check =
 		{{{4,1},{4,2},{4,3}},{{5,1},{5,2},{5,3}},{{6,1},{6,2},{6,3}},{{7,1},{7,2},{7,3}},{{8,1},{9,1},{10,1},{11,0},{12,0}},{{8,2},{9,2},{10,2}},{{8,3},{9,3},{10,3}}};
 	int score = 170;
+	OKeySolver solver;
+	Solution solution = solver.Solve(cards, okey);
+	EXPECT_EQ(solver.Score(solution), score);
+	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+}
+
+TEST(OKeyGame, TimeCostThreeTotallyDiffLongSequence)
+{
+	Deck cards =
+		{{3,1},{4,1},{5,1},{6,1},{7,1},{8,1},{9,1},{4,2},{5,2},{6,2},{7,2},{8,2},{9,2},{10,2},{5,3},{6,3},{7,3},{8,3},{9,3},{10,3},{11,3}};
+	int okey = 2;
+	vector<Deck> play_decks_to_check =
+		{{{3,1},{4,1},{5,1},{6,1},{7,1},{8,1},{9,1}},{{4,2},{5,2},{6,2},{7,2},{8,2},{9,2},{10,2}},{{5,3},{6,3},{7,3},{8,3},{9,3},{10,3},{11,3},{12,0},{13,0}}};
+	int score = 172;
 	OKeySolver solver;
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
