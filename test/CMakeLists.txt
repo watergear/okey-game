@@ -2,21 +2,20 @@
 
 cmake_minimum_required (VERSION 3.0)
 
-project(OKeyGameSolver)
+project(tests)
 
 set(VERSION 1.0.0)
 
+enable_testing()
+
 ################ PACKAGE #####################
 
+find_package(GTest REQUIRED)
 
 ################ MACRO #####################
 
 set(CMAKE_CXX_STANDARD 11)
 add_definitions()
-
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release)
-endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -24,12 +23,16 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 ################ INCLUDE #####################
 
-include_directories(".")
+include_directories("../")
+include_directories(${GTEST_INCLUDE_DIRS})
 
 ################ SOURCE_FILES #####################
 
 file(GLOB_RECURSE SOURCE_FILES
-	./best_solution.cpp
+	../best_solution.cpp
+)
+file(GLOB_RECURSE TEST_FILES
+	./tests.cpp
 )
 
 ############### HEADERS_FOR_QT ###################
@@ -39,10 +42,6 @@ add_custom_target(headers SOURCES ${HeaderFiles})
 
 ################ BUILD #####################
 
-add_library(OKeyGameSolver SHARED ${SOURCE_FILES})
-add_custom_command(
-	TARGET OKeyGameSolver POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy
-				${CMAKE_CURRENT_SOURCE_DIR}/best_solution.h
-				${CMAKE_CURRENT_BINARY_DIR}/OKeyGameSolver.h)
-add_custom_command(TARGET OKeyGameSolver COMMENT "Header file: ${CMAKE_CURRENT_BINARY_DIR}/OKeyGameSolver.h")
+add_executable(tests ${SOURCE_FILES} ${TEST_FILES})
+target_link_libraries(tests ${GTEST_LIBRARIES})
+add_test(tests tests)
