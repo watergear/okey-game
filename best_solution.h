@@ -70,6 +70,8 @@ protected:
 	struct WasteMark
 	{
 		bool triplets[MAX_N+1];
+		int triplet_suit_counts[MAX_N+1];
+		bool triplet_suit_markups[MAX_LEN];
 		bool sequence_upper_bounds[MAX_LEN];
 	};
 	bool IsNextWasteOnSinglePlay(const Play &play, const Card& card, int okey_cost);

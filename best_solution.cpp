@@ -62,6 +62,7 @@ int OKeySolver::MakeBestPlay(Play &play, int okey)
 		}
 		else // Triplet
 		{
+			okey = min(okey, MAX_M - play.count);
 		}
 		play.count += okey;
 		play.suits[0] += okey;
@@ -80,6 +81,7 @@ int OKeySolver::MakeBestPlay(Play &play, int okey)
 		else // to Triplet
 		{
 			play.interval = 0;
+			okey = min(okey, MAX_M - 1);
 		}
 		play.count += okey;
 		play.suits[0] += okey;
@@ -235,8 +237,9 @@ int OKeySolver::CheckPlay(const Play &play, const Card &card)
 				return card.first - play.max - 1;
 		}
 		else // Triplet
+		if ( play.count < MAX_M )
 		{
-			if ( play.max == card.first )
+			if ( play.max == card.first && 0 == play.suits[card.second] )
 				return 0;
 		}
 		return -1;
@@ -244,10 +247,11 @@ int OKeySolver::CheckPlay(const Play &play, const Card &card)
 	else
 	if ( 1 == play.count )
 	{
-		if ( play.max == card.first ) // Triplet
-			return 0;
 		if ( play.suit == card.second ) // Sequence
 			return card.first - play.max - 1;
+		else // Triplet
+		if ( play.max == card.first )
+			return 0;
 		return -1;
 	}
 	return 0;
@@ -267,13 +271,14 @@ void OKeySolver::AddPlay(Play &play, const Card &card)
 		if ( play.max == card.first ) // Triplet
 		{
 			assert(1 == play.count || !play.interval);
+			assert(0 == card.second || 0 == play.suits[card.second]);
 			play.interval = 0;
 		}
 		else  // Sequence
 		{
+			assert(1 == play.count || play.interval);
 			assert(play.max+1 == card.first);
 			assert(0 == card.second || play.suit == card.second);
-			assert(1 == play.count || play.interval);
 			++play.max;
 		}
 		++play.suits[card.second];
@@ -284,6 +289,7 @@ void OKeySolver::RemovePlay(Play &play, const Card &card)
 {
 	assert(play.count > 0);
 	assert(play.max == card.first);
+	assert(play.suits[card.second]);
 	if ( play.interval ) // Sequence
 	{
 		assert(0 == card.second || play.suit == card.second);
@@ -300,19 +306,23 @@ void OKeySolver::RemovePlay(Play &play, const Card &card)
 
 // it is not easy, but it is able to proof for this method.
 /*
-	(a,b,c,...),... => any (a,b),...,(...,c,...),... is waste
+	(a,b),...,(...,c,...),... is waste
 
 		case: 1,2,3
 		proof:
 		(1,2,3,...),...,(),... is better than (1,2),...,(3),...
 
-		case: 1,2,2,3,4
+		case: 1,2,3,4,...
+		proof:
+		(1,2,3,4,...),...,(),... is better than (1,2),...,(3,4,...),...
+
+		case: 1,2,2,3,...
+		proof:
+		(1,2,3,...),...,(2),... is better than (1,2),...,(2,3,...),...
+
+		case: 1,2,2,3,4,...
 		proof:
 		(1,2,3,4,...),...,(2),... is better than (1,2),...,(2,3,4,...),...
-
-		case: 1,2,2,3,4,5
-		proof:
-		(1,2,3,4,5,...),...,(2),... is better than (1,2),...,(2,3,4,5,...),...
 
 		case: 1,2,3,3
 		proof:
@@ -323,19 +333,20 @@ void OKeySolver::RemovePlay(Play &play, const Card &card)
 		(1,2,3,...),...,(3,3),... is bad than (1,2),...,(3,3,3),...
 		(1),(2),...,(3,3,3),... is same as (1,2),...,(3,3,3),...
 
-	(a,a,a,...),... => any (a,a),...,(...,a,...),... is waste
+		case: 1,2,3,3,3,3
+		proof:
+		(1,2,3,...),...,(3,3,3),... is same as (1,2),...,(3,3,3,3),...
+
+	(a,a),...,(...,a,...),... is waste
 
 		case: 1,1,1
 		proof:
-		(1,1,1,...),...,(),... is better than (1,1),...,(1),...
+		(1,1,1),...,(),... is better than (1,1),...,(1),...
 
 		case: 1,1,1,1
 		proof:
-		(1,1,1,1,...),...,(),... is better than (1,1),...,(1,1,...),...
-
-		case: 1,1,1,1,1
-		proof:
-		(1,1,1,1,1,...),...,(),... is better than (1,1),...,(1,1,1,...),...
+		(1,1,1),...,(1),... is better than (1,1),...,(1,1),...
+		(1,1,1),...,(1),... is better than (1,1),...,(1),(1),...
 
 		case: 1,1,1,2
 		proof:
@@ -346,9 +357,9 @@ void OKeySolver::RemovePlay(Play &play, const Card &card)
 		(1,1,1),...,(2,3),... is bad than (1,1),...,(1,2,3),...
 		(1),(1),...,(1,2,3),... is same as (1,1),...,(1,2,3),...
 
-		case: 1,1,1,2,3,4
+		case: 1,1,1,2,3,4,...
 		proof:
-		(1,1,1),...,(2,3,4),... is better than (1,1),...,(1,2,3,4),...
+		(1,1,1),...,(2,3,4,...),... is better than (1,1),...,(1,2,3,4,...),...
 */
 bool OKeySolver::IsNextWasteOnSinglePlay(const Play &play, const Card& card, int okey_cost)
 {
@@ -365,28 +376,26 @@ bool OKeySolver::IsNextWasteOnSinglePlay(const Play &play, const Card& card, int
 		else // Triplet
 		{
 			assert(play.max == card.first);
+			assert(0 == card.second || 0 == play.suits[card.second]);
 			/*
 				play can't be any triplet.
 
-				the following examples need to cared.
-					case: {{1,3},{1,3},{1,3},{2,3},{3,3}} with 0 okey
-					the best solution is {(1,3),(2,3),(3,3)},{(1,3)},{(1,3)}, score is 6.
+				the following examples will be deal with.
+					case: {{1,1},{1,2},{1,3},{2,3},{3,3}} with 0 okey
+					the best solution is {{(1,1)},{(1,2)},{(1,3),(2,3),(3,3)}}, score is 6.
 
-					case: {{1,3},{1,3},{1,3},{2,3},{3,3}} with 1 okey
-					the best solution is {(1,3),(1,3),(1,3)},{(2,3),(3,3),okey}, score is 12.
+					case: {{1,1},{1,2},{1,3},{2,3},{3,3}} with 1 okey
+					the best solution is {{(1,1),(1,2),(1,3)},{(2,3),(3,3),okey}}, score is 12.
 
-					case: {{11,3},{11,3},{11,3},{12,3},{13,3}} with 1 okey
-					the best solution is {(11,3),(11,3),(11,3)},{okey,(12,3),(13,3)}, score is 69.
+					case: {{11,1},{11,2},{11,3},{12,3},{13,3}} with 1 okey
+					the best solution is {{(11,1),(11,2),(11,3)},{okey,(12,3),(13,3)}}, score is 69.
 
-					case: {{1,2},{1,3},{1,3},{1,3},{2,3},{3,3}} with 0 okey
-					the best solution is {(1,2),(1,3),(1,3)},{(1,3),(2,3),(3,3)}, score is 9.
+					case: {{1,1},{1,2},{1,3},{1,3},{2,3},{3,3}} with 0 okey
+					the best solution is {{(1,1),(1,2),(1,3)},{(1,3),(2,3),(3,3)}}, score is 9.
 
-				the following examples need to not cared.
+				the following examples will be not deal with.
 					case: {{1,1},{1,2},{1,3},{1,4},{2,3},{3,3}} with 0 okey
-					the best solution is {(1,1),(1,2),(1,4)},{(1,3),(2,3),(3,3)}, score is 9.
-
-					case: {{1,2},{1,2},{1,2},{1,4},{2,2},{3,2}} with 0 okey
-					the best solution is {(1,2),(1,2),(1,4)},{(1,2),(2,2),(3,2)}, score is 9.
+					the best solution is {{(1,1),(1,2),(1,4)},{(1,3),(2,3),(3,3)}}, score is 9.
 			*/
 			if ( card_suit_upper_bounds[card.first] == card.second ) // no more other else will be triplet
 				return true;
@@ -399,7 +408,7 @@ bool OKeySolver::IsNextWasteOnSinglePlay(const Play &play, const Card& card, int
 /*
 	(a,b),(c,d),...,(...,e,...),... is waste
 	
-		case: 1,2,3,3,3
+		case: 1,2,3,3
 		proof:
 		(1,2,3),...,(3),... is better than (1,2),...,(3),...,(3),...
 
@@ -409,26 +418,24 @@ bool OKeySolver::IsNextWasteOnSinglePlay(const Play &play, const Card& card, int
 		
 	(a),(a),...,(...,b,...),... is waste
 		
-		case: 1,1,2,2,2
+		case: 1,1,2,...
 		proof:
-		(1,1),...,(2,2,2),... is same as (1),(1),...,(2,2,2),...
+		(1,1),...,(2,...),... is same as (1),(1),...,(2,...),...
+		(1,2,...),(1),...,(),... is better than (1),(1),...,(2,...),...
 		
-		case: 1,1,1,2,2,2
+		case: 1,1,1,2,...
 		proof:
-		(1,1,1),...,(2,2,2),... is better than (1,1),(1),...,(2,2,2),...
-		(1,1,1),...,(2,2,2),... is better than (1),(1,1),...,(2,2,2),...
-		(1,1,1),...,(2,2,2),... is better than (1),(1),(1),...,(2,2,2),...
+		(1,1,1),...,(2,...),... is better than (1,1),(1),...,(2,...),...
+		(1,1,1),...,(2,...),... is better than (1),(1,1),...,(2,...),...
+		(1,1,1),...,(2,...),... is better than (1),(1),(1),...,(2,...),...
 		
-		case: 1,1,2,3,4
+		case: 1,1,1,1,2,...
 		proof:
-		(1,1),...,(2,3,4),... is same as (1),(1),...,(2,3,4),...
-		(1,2,3,4),(1),...,(),... is better than (1),(1),...,(2,3,4),...
-		
-		case: 1,1,1,2,3,4
-		proof:
-		(1,1,1),...,(2,3,4),... is better than (1,1),(1),...,(2,3,4),...
-		(1,1,1),...,(2,3,4),... is better than (1),(1,1),...,(2,3,4),...
-		(1,1,1),...,(2,3,4),... is better than (1),(1),(1),...,(2,3,4),...
+		(1,1,1),(1),...,(2,...),... is better than (1,1),(1,1),...,(2,...),...
+		(1,1,1),(1),...,(2,...),... is better than (1,1),(1),(1),...,(2,...),...
+		(1,1,1),(1),...,(2,...),... is better than (1),(1,1),(1),...,(2,...),...
+		(1,1,1),(1),...,(2,...),... is better than (1),(1),(1,1),...,(2,...),...
+		(1,1,1),(1),...,(2,...),... is better than (1),(1),(1),(1),...,(2,...),...
 */
 bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, WasteMark &mark)
 {
@@ -442,14 +449,14 @@ bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, 
 		/*
 			play can't be any sequence.
 
-			the following examples need to cared.
+			the following examples will be deal with.
 				case: {{1,1},{2,1},{3,1},{4,1},{5,1},{6,1},{7,1},{8,1},{9,1},{10,1},{11,1},{12,1},{13,1}} with 0 okey
 				the best solution is {(1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),(13,1)}, score is 91.
 
 				case: {{9,1},{10,1},{11,1},{12,1},{13,1},{11,3},{12,3},{13,3}} with 0 okey
 				the best solution is {(9,1),(10,1),(11,1),(12,1),(13,1)},{(11,3),(12,3),(13,3)}, score is 91.
 
-			the following examples need to not cared.
+			the following examples will be not deal with.
 				case: {{9,1},{10,1},{11,1},{12,1},{13,1},{11,3},{12,3},{13,3}} with 1 okey
 				the best solution is {(9,1),(10,1),(11,1)},{(11,3),(12,3),(13,3)},{okey,(12,1),(13,1)}, score is 102.
 
@@ -460,7 +467,7 @@ bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, 
 				the best solution is {(1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(11,1)},{okey,okey,(12,1)}, score is 102.
 
 				case: {{7,1},{8,1},{9,1},{10,1},{11,1},{12,1},{13,1},{7,1},{8,1},{9,1},{10,1},{11,1},{12,1},{13,1}} with 1 okey
-				the best solution is {(7,1),(8,1),(9,1),(10,1),(11,1),(12,1)},{(7,1),(8,1),(9,1),(10,1),(11,1),(12,1)},{okey,(13,1),(13,1)}, score is 153.
+				the best solution is {{(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),(13,1)},{(7,1),(8,1),(9,1),(10,1),(11,1)},{okey,(12,1),(13,1)}}, score is 151.
 
 				case: {{7,1},{8,1},{9,1},{10,1},{11,1},{12,1},{13,1},{7,1},{8,1},{9,1},{10,1},{11,1},{12,1},{13,1}} with 2 okey
 				the best solution is {(7,1),(8,1),(9,1),(10,1),(11,1),(12,1),(13,1)},{(7,1),(8,1),(9,1),(10,1),(11,1),(12,1)},{okey,okey,(13,1)}, score is 166.
@@ -485,53 +492,62 @@ bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, 
 		/*
 			play can't be any triplet.
 
-			the following examples need to cared.
-				case: {{9,1},{9,1},{11,1},{10,1},{10,2},{10,3}} with 1 okey
-				the best solution is {(9,1),(10,1),(11,1)},{(9,1)},{okey,(10,2),(10,3)}, score is 60.
+			the following examples will be deal with.
+				case: {{9,1},{9,2},{9,3},{11,2},{10,1},{10,2},{10,3}} with 1 okey
+				the best solution is {{(9,1),(9,2),(9,3)},{okey,(10,1),(10,2),(10,3)},{(11,2)}}, score is 67.
 
-				case: {{9,2},{9,2},{11,2},{10,1},{10,2},{10,3}} with 1 okey
-				the best solution is {(9,2),(10,2),(11,2)},{(9,2)},{okey,(10,1),(10,3)}, score is 60.
+				case: {{9,1},{9,2},{9,3},{9,4},{11,2},{10,1},{10,2},{10,3}} with 1 okey
+				the best solution is {{(9,1),(9,3),(9,4)},{(9,2),(10,2),(11,2)},{okey,(10,1),(10,3)}}, score is 87.
 
-				case: {{9,2},{9,2},{9,2},{11,2},{10,1},{10,2},{10,3}} with 1 okey
-				the best solution is {(9,2),(9,2),(9,2)},{okey,(10,1),(10,2),(10,3)},{(11,2)}, score is 67.
+				case: {{9,1},{9,2},{9,3},{9,4},{9,2},{11,2},{10,1},{10,2},{10,3}} with 1 okey
+				the best solution is {{(9,1),(9,2),(9,3),(9,4)},{(9,2),(10,2),(11,2)},{okey,(10,1),(10,3)}}, score is 96.
 
-				case: {{9,2},{9,2},{9,2},{9,2},{11,2},{10,1},{10,2},{10,3}} with 1 okey
-				the best solution is {(9,2),(9,2),(9,2)},{(9,2),(10,2),(11,2)},{okey,(10,1),(10,3)}, score is 87.
+				case: {{10,1},{10,2},{10,3},{10,4},{11,1},{12,1}} with 0 okey
+				the best solution is {{(10,1),(11,1),(12,1)},{(10,2),(10,3),(10,4)}}, score is 63.
 
-				case: {{9,2},{9,2},{9,2},{9,2},{9,2},{11,2},{10,1},{10,2},{10,3}} with 1 okey
-				the best solution is {(9,2),(9,2),(9,2),(9,2)},{(9,2),(10,2),(11,2)},{okey,(10,1),(10,3)}, score is 96.
+				case: {{10,2},{10,2},{10,3},{10,4},{11,2},{12,2},{11,2}} with 0 okey
+				the best solution is {{(10,2),(10,3),(10,4)},{(10,2),(11,2),(12,2)},{(11,2)}}, score is 63.
 
-				case: {{10,1},{10,1},{12,1},{12,1},{13,1},{11,1}} with 2 okey
-				the best solution is {(10,1),(11,1),(12,1),(13,1)},{(10,1),okey,(12,1),okey}, score is 92.
+				case: {{10,1},{10,2},{10,3},{10,4},{12,1},{12,2},{13,2},{11,1}} with 1 okey
+				the best solution is {{(10,1),(11,1),(12,1)},{(10,2),(10,3),(10,4)},{okey,(12,2),(13,2)}}, score is 99.
 
-				case: {{10,1},{10,2},{12,1},{12,2},{13,2},{11,1}} with 1 okey
-				the best solution is {(10,1),(11,1),(12,1)},{(10,2),okey,(12,2),(13,2)}, score is 79.
+			the following examples will be not deal with.
+				case: {{10,1},{10,2},{12,1},{12,2},{13,2},{11,3}} with 2 okey
+				the best solution is {{(10,1),okey,(12,1)},{(10,2),okey,(12,2),(13,2)},{(11,3)}}, score is 79.
 
-				case: {{10,1},{10,2},{10,1},{10,2},{12,1},{12,2},{13,2},{11,1}} with 1 okey
-				the best solution is {(10,1),(10,2),(10,2)},{(10,1),(11,1),(12,1)},{okey,(12,2),(13,2)}, score is 99.
-
-				case: {{10,1},{10,2},{10,2},{10,2},{11,1},{12,1}} with 0 okey
-				the best solution is {(10,1),(11,1),(12,1)},{(10,2),(10,2),(10,2)}, score is 63.
-
-				case: {{10,2},{10,3},{10,3},{10,3},{11,2},{12,2},{11,2}} with 0 okey
-				the best solution is {(10,2),(11,2),(12,2)},{(10,3),(10,3),(10,3)},{(11,2)}, score is 63.
-
-			the following examples need to not cared.
-				case: {{10,1},{10,1},{12,1},{12,1},{13,1},{11,2}} with 2 okey
-				the best solution is {(10,1),okey,(12,1),(13,1)},{(10,1),okey,(12,1)},{(11,2)}, score is 79.
-
-				case: {{10,2},{10,3},{10,3},{10,3},{11,2},{12,2},{11,1}} with 0 okey
-				the best solution is {(10,2),(11,2),(12,2)},{(10,3),(10,3),(10,3)},{(11,1)}, score is 63.
-
-				case: {{10,2},{10,3},{10,3},{10,3},{11,3},{12,3},{11,2}} with 0 okey
-				the best solution is {(10,2),(10,3),(10,3)},{(10,3),(11,3),(12,3)},{(11,2)}, score is 63.
+				case: {{10,1},{10,2},{10,3},{10,4},{11,3},{12,3},{11,2}} with 0 okey
+				the best solution is {{(10,1),(10,2),(10,4)},{(10,3),(11,3),(12,3)},{(11,2)}}, score is 63.
 
 				case: {{9,2},{9,4},{11,4},{10,1},{10,2},{10,3}} with 1 okey
 				the best solution is {(9,2)},{(9,4),okey,(11,4)},{(10,1),(10,2),(10,3)}, score is 60.
 		*/
-		if ( mark.triplets[play.max] ) // combinable triplet
-			return true;
-		mark.triplets[play.max] = true;
+		if ( play.count < 3 && play.max < card.first ) // bad triplet and need add okey to score up
+		{
+			bool suit_available = false;
+			if ( mark.triplet_suit_counts[play.max] < card_suit_upper_bounds[play.max] )
+			{
+				for (int suit = 1; suit <= card_suit_upper_bounds[play.max]; ++suit)
+				{
+					if ( play.suits[suit] )
+					{
+						int card_offset = CARD_OFFSET(play.max, suit);
+						if ( !mark.triplet_suit_markups[card_offset] )
+						{
+							suit_available = true;
+							++mark.triplet_suit_counts[play.max];
+							mark.triplet_suit_markups[card_offset] = true;
+						}
+					}
+				}
+			}
+			if ( !mark.triplets[play.max] )
+				mark.triplets[play.max] = true;
+			else
+			{
+				if ( suit_available ) // combinable triplet
+					return true;
+			}
+		}
 	}
 
 	return false;
@@ -548,7 +564,7 @@ void OKeySolver::Search()
 	const Card &card = hand_cards[card_index];
 	int card_offset = CARD_OFFSET(card);
 	int last_play_index = last_play_indexes[card_offset];
-	WasteMark waste_mark = {{0},{0}};
+	WasteMark waste_mark = {{0},{0},{0},{0}};
 	bool is_next_waste = false;
 	if ( 0 < last_play_index )
 		is_next_waste = IsNextWasteOnMultiplePlays(solution.plays[last_play_index-1], card, waste_mark);
