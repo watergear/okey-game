@@ -11,6 +11,7 @@ enable_testing()
 ################ PACKAGE #####################
 
 find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
 
 ################ MACRO #####################
 
@@ -44,4 +45,5 @@ add_custom_target(headers SOURCES ${HeaderFiles})
 
 add_executable(tests ${SOURCE_FILES} ${TEST_FILES})
 target_link_libraries(tests ${GTEST_LIBRARIES})
+target_link_libraries(tests ${CMAKE_THREAD_LIBS_INIT})
 add_test(tests tests)

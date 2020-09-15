@@ -3,6 +3,8 @@
 
 #include "sys/time.h"
 
+#include <algorithm>
+
 using namespace std;
 using namespace OKey;
 

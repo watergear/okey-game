@@ -1,6 +1,9 @@
 #include "best_solution.h"
 
+#include <cassert>
 #include <iostream>
+#include <algorithm>
+
 using namespace std;
 
 namespace OKey {
