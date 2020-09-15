@@ -437,15 +437,27 @@ bool OKeySolver::IsNextWasteOnSinglePlay(const Play &play, const Card& card, int
 		(1,1,1),(1),...,(2,...),... is better than (1),(1),(1,1),...,(2,...),...
 		(1,1,1),(1),...,(2,...),... is better than (1),(1),(1),(1),...,(2,...),...
 */
-bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, WasteMark &mark)
+bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, PlayPreference &preference, WasteMark &mark)
 {
-	#define MUST_TO_BE_SEQ(__play__, __card__) ( ( __play__.count > 1 && __play__.interval ) || \
-		( 1 == __play__.count && __play__.max == __card__.first && card_suit_upper_bounds[card.first] == card.second ) )
-	#define MUST_TO_BE_TRI(__play__, __card__) ( !__play__.interval || \
-		( 1 == __play__.count && __play__.max < __card__.first && __play__.suit == __card__.second ) )
-	
-	if ( MUST_TO_BE_SEQ(play, card) )
+	PlayPreference play_preference = PlayPreferNone;
+	if ( play.count > 1 )
 	{
+		play_preference = play.interval ? PlayPreferToSequence : PlayPreferToTriplet;
+	}
+	else
+	{
+		assert(1 == play.count);
+		if ( play.max == card.first && card_suit_upper_bounds[card.first] == card.second )
+			preference = PlayPreferToSequence;
+		else
+		if ( play.max < card.first && play.suit == card.second )
+			preference = PlayPreferToTriplet;
+		play_preference = preference;
+	}
+	
+	switch ( play_preference )
+	{
+	case PlayPreferToSequence:
 		/*
 			play can't be any sequence.
 
@@ -485,10 +497,9 @@ bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, 
 				return true;
 		}
 		mark.sequence_upper_bounds[CARD_OFFSET(play.max, play.suit)] = true;
-	}
-	else
-	if ( MUST_TO_BE_TRI(play, card) )
-	{
+
+		break;
+	case PlayPreferToTriplet:
 		/*
 			play can't be any triplet.
 
@@ -548,6 +559,10 @@ bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, 
 					return true;
 			}
 		}
+		
+		break;
+	default:
+		;
 	}
 
 	return false;
@@ -564,10 +579,11 @@ void OKeySolver::Search()
 	const Card &card = hand_cards[card_index];
 	int card_offset = CARD_OFFSET(card);
 	int last_play_index = last_play_indexes[card_offset];
+	auto play_preferences_bak = play_preferences;
 	WasteMark waste_mark = {{0},{0},{0},{0}};
 	bool is_next_waste = false;
 	if ( 0 < last_play_index )
-		is_next_waste = IsNextWasteOnMultiplePlays(solution.plays[last_play_index-1], card, waste_mark);
+		is_next_waste = IsNextWasteOnMultiplePlays(solution.plays[last_play_index-1], card, play_preferences[last_play_index-1], waste_mark);
 	++card_index;
 	int solution_size = solution.plays.size();
 	for ( int play_index = last_play_index; play_index < solution_size; ++play_index )
@@ -613,7 +629,7 @@ void OKeySolver::Search()
 			}
 		}
 
-		is_next_waste = IsNextWasteOnMultiplePlays(solution.plays[play_index], card, waste_mark);
+		is_next_waste = IsNextWasteOnMultiplePlays(solution.plays[play_index], card, play_preferences[play_index], waste_mark);
 		if ( is_next_waste )
 			break;
 	}
@@ -622,12 +638,15 @@ void OKeySolver::Search()
 		Play play_new = {0,0,0,0,0,{0}};
 		AddPlay(play_new, card);
 		solution.plays.push_back(play_new);
+		play_preferences.push_back(PlayPreferNone);
 		last_play_indexes[card_offset] = solution_size;
 		Search();
 		solution.plays.pop_back();
+		play_preferences.pop_back();
 	}
 	--card_index;
 	last_play_indexes[card_offset] = last_play_index;
+	play_preferences = play_preferences_bak; // prevent play preferences from become dirt
 }
 
 Solution OKeySolver::Solve(const Deck &cards, int okey)
@@ -638,6 +657,7 @@ Solution OKeySolver::Solve(const Deck &cards, int okey)
 	for ( const auto &card : hand_cards )
 		card_suit_upper_bounds[card.first] = max(card_suit_upper_bounds[card.first], card.second);
 	last_play_indexes.resize(MAX_LEN, 0);
+	play_preferences.clear();
 	solution.plays.clear();
 	solution.okey = okey;
 	best_solution.plays.clear();

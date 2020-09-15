@@ -67,6 +67,12 @@ protected:
 	bool AddBest(const Solution &solution);
 	int MakeBestPlay(Play &play, int okey);
 
+	enum PlayPreference
+	{
+		PlayPreferNone = 0,
+		PlayPreferToSequence,
+		PlayPreferToTriplet,
+	};
 	struct WasteMark
 	{
 		bool triplets[MAX_N+1];
@@ -75,7 +81,7 @@ protected:
 		bool sequence_upper_bounds[MAX_LEN];
 	};
 	bool IsNextWasteOnSinglePlay(const Play &play, const Card& card, int okey_cost);
-	bool IsNextWasteOnMultiplePlays(const Play &play, const Card& card, WasteMark &mark);
+	bool IsNextWasteOnMultiplePlays(const Play &play, const Card& card, PlayPreference &preference, WasteMark &mark);
 
 private:
 	Deck hand_cards;
@@ -85,6 +91,7 @@ private:
 
 	Solution solution;
 	std::vector<int> last_play_indexes;
+	std::vector<PlayPreference> play_preferences;
 
 	Solution best_solution;
 	int best_score;

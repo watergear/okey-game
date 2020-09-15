@@ -1750,7 +1750,7 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysLongUpperSequenceLogic_2)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-// testing ( 1 == __play__.count && __play__.max == __card__.first && card_suit_upper_bounds[card.first] == card.second )
+// testing ( play.max == card.first && card_suit_upper_bounds[card.first] == card.second )
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysSequenceNeedCheckingCardSuitUpperBoundsLogic)
 {
 	Deck cards =
@@ -2186,75 +2186,76 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTwoLongDiffTripletsLogic_2)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-// proof for MUST_TO_BE_TRI() logic
-/**
-	for case:
-	i,i,i+3,...
-
-	suppose to:
-	i
-	i (i+1) (i+2)
-	i+3 ...
-	score = i + (i+1) + (i+2) = 3i + 3
-
-	be possible to:
-	1)
-	i i
-	(i+3) (i+3) i+3 x 1
-	score = (i+3) + (i+3) + i+3 = 3i + 9
-
-	2)
-	i i
-	(i+3) (i+3) i+3 x 2
-	score = (i+3) + (i+3) + i+3 + i+3 = 4i + 12
-
-	or
-	i i (i)
-	(i+3) i+3 x 2
-	score = i + i + (i) + (i+3) + i+3 + i+3 = 6i + 9
-
-	3)
-	i i (i)
-	(i+3) i+3 x 3
-	= i + i + (i) + (i+3) = 4i + 3
-
-	4)
-	i i (i) (i)
-	i+3 x 4
-	= i + i + (i) + (i) = 4i
-
-	or
-	i i
-	i+3 x 3
-	(i+3) (i+3) i+3
-	= i+3 i+3 = 2i + 6
-
-	5)
-	i i (i)
-	(i+2) i+3 i+4 ...
-	= i + i + (i) + (i+2) = 4i + 2
-
-	for 1)
-	3i + 3 > 3i + 9  ==>  0 > 6
-
-	for 2)
-	3i + 3 > 4i + 12 and 3i + 3 > 6i + 9  ==>  i < -9 and i < -2
-
-	for 3)
-	3i + 3 > 4i + 3  ==>  i < 0
-
-	for 4)
-	3i + 3 > 4i and 3i + 3 > 2i + 6  ==> i < 3 and i > 3
-
-	for 5)
-	3i + 3 > 4i + 2  ==>  i < 1
-
-	conclusion:
-	for case i,i,i+3,..., then {i,i,...},{i+3,...} is better than {i},{i,i+1,i+2},{i+3,...}
-**/
-
-// testing MUST_TO_BE_TRI(__play__, __card__) as triplet solution is better than sequence solution
-TEST(OKeyGame, TestNextWasteOnMultiplePlaysMustToTripletLogic)
+// proof for code's logic
+//	if ( 1 == play.count && play.max < card.first && play.suit == card.second )
+//				preference = PlayPreferToTriplet
+//
+//		for case:
+//		i,i,i+3,...
+//
+//		suppose to:
+//		i
+//		i (i+1) (i+2)
+//		i+3 ...
+//		score = i + (i+1) + (i+2) = 3i + 3
+//
+//		be possible to:
+//		1)
+//		i i
+//		(i+3) (i+3) i+3 x 1
+//		score = (i+3) + (i+3) + i+3 = 3i + 9
+//
+//		2)
+//		i i
+//		(i+3) (i+3) i+3 x 2
+//		score = (i+3) + (i+3) + i+3 + i+3 = 4i + 12
+//
+//		or
+//		i i (i)
+//		(i+3) i+3 x 2
+//		score = i + i + (i) + (i+3) + i+3 + i+3 = 6i + 9
+//
+//		3)
+//		i i (i)
+//		(i+3) i+3 x 3
+//		= i + i + (i) + (i+3) = 4i + 3
+//
+//		4)
+//		i i (i) (i)
+//		i+3 x 4
+//		= i + i + (i) + (i) = 4i
+//
+//		or
+//		i i
+//		i+3 x 3
+//		(i+3) (i+3) i+3
+//		= i+3 i+3 = 2i + 6
+//
+//		5)
+//		i i (i)
+//		(i+2) i+3 i+4 ...
+//		= i + i + (i) + (i+2) = 4i + 2
+//
+//		for 1)
+//		3i + 3 > 3i + 9  ==>  0 > 6
+//
+//		for 2)
+//		3i + 3 > 4i + 12 and 3i + 3 > 6i + 9  ==>  i < -9 and i < -2
+//
+//		for 3)
+//		3i + 3 > 4i + 3  ==>  i < 0
+//
+//		for 4)
+//		3i + 3 > 4i and 3i + 3 > 2i + 6  ==> i < 3 and i > 3
+//
+//		for 5)
+//		3i + 3 > 4i + 2  ==>  i < 1
+//
+//		conclusion:
+//		for case i,i,i+3,..., then {i,i,...},{i+3,...} is better than {i},{i,i+1,i+2},{i+3,...}
+//
+// testing preference = PlayPreferToTriplet, as triplet solution is better than sequence solution
+TEST(OKeyGame, TestNextWasteOnMultiplePlaysPreferToTripletLogic)
 {
 	Deck cards =
 		{{2,1},{2,2},{5,1},{5,2},{5,3},{5,4}};
@@ -2268,8 +2269,8 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysMustToTripletLogic)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-// testing MUST_TO_BE_TRI(__play__, __card__) as triplet solution is better than sequence solution
-TEST(OKeyGame, TestNextWasteOnMultiplePlaysMustToTripletLogic_2)
+// testing preference = PlayPreferToTriplet, as triplet solution is better than sequence solution
+TEST(OKeyGame, TestNextWasteOnMultiplePlaysPreferToTripletLogic_2)
 {
 	Deck cards =
 		{{4,1},{4,2},{7,1},{7,2},{7,3},{7,4}};
@@ -2283,7 +2284,7 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysMustToTripletLogic_2)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-// testing ( 1 == __play__.count && __play__.max < __card__.first && __play__.suit == __card__.second )
+// testing ( play.max < card.first && play.suit == card.second )
 // testing ( play.count < 3 && play.max < card.first )
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardPointLogic)
 {
@@ -2299,37 +2300,37 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardPointLogic)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-// testing ( 1 == __play__.count && __play__.max < __card__.first && __play__.suit == __card__.second )
-TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardPointLogic_2)
-{	// this is unable to catch the error from logic of codes
-	Deck cards =
-		{{9,1},{9,2},{9,3},{9,4},{11,4},{12,4},{13,4}};
-	int okey = 2;
-	vector<Deck> play_decks_to_check =
-		{{{9,1},{9,2},{9,3}},{{9,4},{10,0},{11,4}},{{11,0},{12,4},{13,4}}};
-	int score = 93;
-	OKeySolver solver;
-	Solution solution = solver.Solve(cards, okey);
-	EXPECT_EQ(solver.Score(solution), score);
-	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
-}
+// // testing ( play.max < card.first && play.suit == card.second )
+// TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardPointLogic_2)
+// {	// this is unable to catch the error from logic of codes
+// 	Deck cards =
+// 		{{9,1},{9,2},{9,3},{9,4},{11,4},{12,4},{13,4}};
+// 	int okey = 2;
+// 	vector<Deck> play_decks_to_check =
+// 		{{{9,1},{9,2},{9,3}},{{9,4},{10,0},{11,4}},{{11,0},{12,4},{13,4}}};
+// 	int score = 93;
+// 	OKeySolver solver;
+// 	Solution solution = solver.Solve(cards, okey);
+// 	EXPECT_EQ(solver.Score(solution), score);
+// 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+// }
 
-// testing ( 1 == __play__.count && __play__.max < __card__.first && __play__.suit == __card__.second )
-TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardPointLogic_3)
-{	// this is unable to catch the error from logic of codes
-	Deck cards =
-		{{8,1},{8,2},{8,3},{8,4},{11,4},{12,4},{13,4}};
-	int okey = 2;
-	vector<Deck> play_decks_to_check =
-		{{{8,1},{8,2},{8,3},{8,4}},{{9,0},{10,0},{11,4},{12,4},{13,4}}};
-	int score = 87;
-	OKeySolver solver;
-	Solution solution = solver.Solve(cards, okey);
-	EXPECT_EQ(solver.Score(solution), score);
-	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
-}
+// // testing ( play.max < card.first && play.suit == card.second )
+// TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardPointLogic_3)
+// {	// this is unable to catch the error from logic of codes
+// 	Deck cards =
+// 		{{8,1},{8,2},{8,3},{8,4},{11,4},{12,4},{13,4}};
+// 	int okey = 2;
+// 	vector<Deck> play_decks_to_check =
+// 		{{{8,1},{8,2},{8,3},{8,4}},{{9,0},{10,0},{11,4},{12,4},{13,4}}};
+// 	int score = 87;
+// 	OKeySolver solver;
+// 	Solution solution = solver.Solve(cards, okey);
+// 	EXPECT_EQ(solver.Score(solution), score);
+// 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+// }
 
-// testing ( 1 == __play__.count && __play__.max < __card__.first && __play__.suit == __card__.second )
+// testing ( play.max < card.first && play.suit == card.second )
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardSuitLogic)
 {
 	Deck cards =
@@ -2344,7 +2345,7 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardSuitLogic)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
-// testing ( 1 == __play__.count && __play__.max < __card__.first && __play__.suit == __card__.second )
+// testing ( play.max < card.first && play.suit == card.second )
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingCardSuitLogic_2)
 {
 	Deck cards =
@@ -2404,6 +2405,21 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedCheckingPlaySuitAvailableL
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
+// testing play_preferences = play_preferences_bak; // prevent play preferences from become dirt
+TEST(OKeyGame, TestNextWasteOnMultiplePlaysTripletNeedRestorePlayPreferencesLogic)
+{
+	Deck cards =
+		{{9,2},{9,4},{11,4},{10,1},{10,2},{10,3}};
+	int okey = 1;
+	vector<Deck> play_decks_to_check =
+		{{{9,2}},{{9,4},{10,0},{11,4}},{{10,1},{10,2},{10,3}}};
+	int score = 60;
+	OKeySolver solver;
+	Solution solution = solver.Solve(cards, okey);
+	EXPECT_EQ(solver.Score(solution), score);
+	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+}
+
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysDiscontinuousTripletsLogic)
 {
 	Deck cards =
@@ -2412,6 +2428,20 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysDiscontinuousTripletsLogic)
 	vector<Deck> play_decks_to_check =
 		{{{10,1},{10,2},{10,4}},{{10,3},{11,3},{12,3}},{{11,2}}};
 	int score = 63;
+	OKeySolver solver;
+	Solution solution = solver.Solve(cards, okey);
+	EXPECT_EQ(solver.Score(solution), score);
+	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+}
+
+TEST(OKeyGame, TestNextWasteOnMultiplePlaysTwoSingleTripletsLogic)
+{
+	Deck cards =
+		{{5,1},{5,2},{5,2},{5,3},{5,3},{5,4},{9,1},{9,2},{9,3}};
+	int okey = 0;
+	vector<Deck> play_decks_to_check =
+		{{{5,1},{5,2},{5,3}},{{5,2},{5,3},{5,4}},{{9,1},{9,2},{9,3}}};
+	int score = 57;
 	OKeySolver solver;
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
