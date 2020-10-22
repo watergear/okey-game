@@ -550,6 +550,13 @@ bool OKeySolver::IsNextWasteOnMultiplePlays(const Play &play, const Card& card, 
 							suit_available = true;
 							++mark.triplet_suit_counts[play.max];
 							mark.triplet_suit_markups[card_offset] = true;
+
+							// two single triplets are incombinable
+							if ( 1 == play.count && mark.triplet_suit_counts[play.max] < 3
+								&& play.suit < card_suit_upper_bounds[play.max] )
+							{	// refer to ( 2 == play.count ) in IsNextWasteOnSinglePlay()
+								suit_available = false;
+							}
 						}
 					}
 				}

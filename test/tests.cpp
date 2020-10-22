@@ -3471,6 +3471,36 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeDiffOneOneTripletLogic_8)
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
+// testing ( 1 == play.count && mark.triplet_suit_counts[play.max] < 3 && play.suit < card_suit_upper_bounds[play.max] )
+TEST(OKeyGame, FixedNextWasteOnMultiplePlaysTypeDiffOneOneTripletWithPlayPreferencesLogic)
+{
+	Deck cards =
+		{{2,1},{2,2},{2,3},{3,3},{4,3},{5,1},{5,2}};
+	int okey = 0;
+	vector<Deck> play_decks_to_check =
+		{{{2,1}},{{2,2}},{{2,3},{3,3},{4,3}},{{5,1},{5,2}}};
+	int score = 9;
+	OKeySolver solver;
+	Solution solution = solver.Solve(cards, okey);
+	EXPECT_EQ(solver.Score(solution), score);
+	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+}
+
+// testing ( 1 == play.count && mark.triplet_suit_counts[play.max] < 3 && play.suit < card_suit_upper_bounds[play.max] )
+TEST(OKeyGame, FixedNextWasteOnMultiplePlaysTypeDiffOneOneTripletWithPlayPreferencesLogic_2)
+{
+	Deck cards =
+		{{2,1},{2,1},{2,2},{2,2},{2,3},{3,3},{4,3},{5,1},{5,2}};
+	int okey = 0;
+	vector<Deck> play_decks_to_check =
+		{{{2,1}},{{2,1}},{{2,2}},{{2,2}},{{2,3},{3,3},{4,3}},{{5,1},{5,2}}};
+	int score = 9;
+	OKeySolver solver;
+	Solution solution = solver.Solve(cards, okey);
+	EXPECT_EQ(solver.Score(solution), score);
+	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+}
+
 TEST(OKeyGame, TimeCostTwoLongSequence)
 {
 	Deck cards =
