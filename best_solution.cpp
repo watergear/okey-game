@@ -218,16 +218,52 @@ int OKeySolver::Score(const Solution &solution)
 	return score;
 }
 
+int OKeySolver::Count(const Play& play)
+{
+	if ( play.count >= 3 )
+		return play.count;
+	return 0;
+}
+
+int OKeySolver::Count(const Solution &solution)
+{
+	int count = 0;
+	for ( const auto &play : solution.plays )
+		count += Count(play);
+	return count;
+}
+
 bool OKeySolver::AddBest(const Solution &solution)
 {
+	bool add_best = false;
+
 	int score = Score(solution);
 	if ( score > best_score )
 	{
 		best_score = score;
-		best_solution = solution;
-		return true;
+		best_score_solution = solution;
+		add_best = true;
 	}
-	return false;	
+
+	int count = Count(solution);
+	if ( count > best_count || (count == best_count && score > best_score_in_best_count) )
+	{
+		best_count = count;
+		best_score_in_best_count = score;
+		best_count_solution = solution;
+		add_best = true;
+	}
+
+	return add_best;	
+}
+
+Solution OKeySolver::GetBestScoreSolution()
+{
+	return best_score_solution;
+}
+Solution OKeySolver::GetBestCountSolution()
+{
+	return best_count_solution;
 }
 
 int OKeySolver::CheckPlay(const Play &play, const Card &card)
@@ -670,12 +706,16 @@ Solution OKeySolver::Solve(const Deck &cards, int okey)
 	play_preferences.clear();
 	solution.plays.clear();
 	solution.okey = okey;
-	best_solution.plays.clear();
-	best_solution.okey = 0;
+	best_score_solution.plays.clear();
+	best_score_solution.okey = 0;
 	best_score = 0;
+	best_count_solution.plays.clear();
+	best_count_solution.okey = 0;
+	best_count = 0;
+	best_score_in_best_count = 0;
 	card_index = 0;
 	Search();
-	return best_solution;
+	return best_score_solution;
 }
 
 Deck Play2Deck(const Play &play)

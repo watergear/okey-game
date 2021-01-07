@@ -552,6 +552,12 @@ TEST(OKeyGame, BaseMiddleUpperSequenceTwoOKey_2)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{1,1},{2,0},{3,1}},{{5,1},{6,0},{7,1}}};
+	int count = 6;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, BaseMiddleUpperSequenceTwoOKey_3)
@@ -748,6 +754,12 @@ TEST(OKeyGame, NormalUpperSequenceOnLongSequenceTwoOKey)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{1,1},{2,1},{3,1},{4,1},{5,0}},{{2,2},{3,0},{4,2}}};
+	int count = 8;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, AntiGreedySequenceFirstZeroOKey)
@@ -804,6 +816,12 @@ TEST(OKeyGame, TestOKeyCheckPassLogic)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{1,1},{2,1},{3,1},{4,1},{5,1}},{{2,1},{3,0},{4,0},{5,1}}};
+	int count = 9;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, TestNextWasteOnSinglePlayShortSequenceLogic)
@@ -2269,6 +2287,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysPreferToTripletLogic)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{2,0},{2,0},{2,1},{2,2}},{{5,1},{5,2},{5,3},{5,4}}};
+	int count = 8;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 // testing preference = PlayPreferToTriplet, as triplet solution is better than sequence solution
@@ -2284,6 +2308,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysPreferToTripletLogic_2)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{4,0},{4,0},{4,1},{4,2}},{{7,1},{7,2},{7,3},{7,4}}};
+	int count = 8;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 // testing ( play.max < card.first && play.suit == card.second )
@@ -2700,6 +2730,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeSameThreeTwoTripletLogic_4)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{5,0},{5,1},{5,2},{5,3}},{{5,0},{5,2},{5,3}},{{9,2}}};
+	int count = 7;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeSameThreeTwoTripletLogic_5)
@@ -2728,6 +2764,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeSameThreeTwoTripletLogic_6)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{5,0},{5,1},{5,2},{5,3}},{{5,0},{5,2},{5,3}},{{9,4}}};
+	int count = 7;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeDiffThreeTwoTripletLogic)
@@ -2756,6 +2798,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeDiffThreeTwoTripletLogic_2)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{5,1},{5,2},{5,3},{5,4}},{{5,3},{6,0},{7,0}},{{9,1},{9,2},{9,3},{9,4}}};
+	int count = 11;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeDiffThreeTwoTripletLogic_3)
@@ -3063,6 +3111,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeSameTwoTwoTripletLogic_5)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{5,0},{5,1},{5,2}},{{5,0},{5,1},{5,2}},{{10,2}}};
+	int count = 6;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeDiffTwoTwoTripletLogic)
@@ -3287,6 +3341,12 @@ TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeSameOneOneTripletLogic)
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
 	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	vector<Deck> best_count_play_decks_to_check =
+		{{{5,1},{6,0},{7,0}},{{5,1}},{{9,1},{9,2},{9,3},{9,4}}};
+	int count = 7;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	EXPECT_EQ(solver.Count(best_count_solution), count);
+	EXPECT_EQ(Solution2Decks(best_count_solution, cards), best_count_play_decks_to_check);
 }
 
 TEST(OKeyGame, TestNextWasteOnMultiplePlaysTypeSameOneOneTripletLogic_2)
@@ -3667,9 +3727,16 @@ int dump_test()
 	begin=clock();
 	Solution solution = solver.Solve(cards, 2);
 	end=clock();
-	cout<<"best solution:"<<endl;
+	cout<<"----------------------------------------"<<endl;
+	cout<<"best score solution:"<<endl;
 	dump(Solution2Decks(solution, cards));
 	cout<<"best score: "<<solver.Score(solution)<<endl;
+	cout<<"----------------------------------------"<<endl;
+	cout<<"best count solution:"<<endl;
+	Solution best_count_solution = solver.GetBestCountSolution();
+	dump(Solution2Decks(best_count_solution, cards));
+	cout<<"best count: "<<solver.Count(best_count_solution)<<endl;
+	cout<<"----------------------------------------"<<endl;
 	cout<<"Time cost: "<< (double)(end - begin) / CLOCKS_PER_SEC <<" secs."<< endl;
 	return 0;
 }

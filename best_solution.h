@@ -55,6 +55,11 @@ public:
 	Solution Solve(const Deck &cards, int okey = 2);
 	int Score(const Solution &solution);
 	int Score(const Play& play);
+	int Count(const Solution &solution);
+	int Count(const Play& play);
+
+	Solution GetBestScoreSolution();
+	Solution GetBestCountSolution();
 
 protected:
 	void Search();
@@ -93,8 +98,12 @@ private:
 	std::vector<int> last_play_indexes;
 	std::vector<PlayPreference> play_preferences;
 
-	Solution best_solution;
+	Solution best_score_solution;
 	int best_score;
+	
+	Solution best_count_solution;
+	int best_count;
+	int best_score_in_best_count;
 };
 
 Deck Play2Deck(const Play &play);
