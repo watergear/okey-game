@@ -75,7 +75,7 @@ int OKeySolver::MakeBestPlay(Play &play, int okey)
 	{
 		int add_to_max = min(okey, MAX_N - play.max);
 		int add_to_min = min(okey - add_to_max, play.min - 1);
-		if (add_to_max > add_to_min) // to Sequence
+		if ( add_to_max > add_to_min ) // to Sequence
 		{
 			play.min -= add_to_min;
 			play.max += add_to_max;
@@ -97,31 +97,6 @@ void OKeySolver::Evaluate(const Solution &solution)
 
 	if ( 2 <= solution.okey )
 	{
-		// 2 okey
-		{
-			int best_i = -1;
-			int best_score_up = 0;
-			Play best_play;
-			for ( size_t i = 0; i < solution.plays.size(); ++i )
-			{
-				Play play = solution.plays[i];
-				int score_up = MakeBestPlay(play, 2);
-				if ( score_up > best_score_up )
-				{
-					best_i = i;
-					best_score_up = score_up;
-					best_play = play;
-				}
-			}
-			Solution okey_solution(solution);
-			if (best_score_up > 0)
-			{
-				okey_solution.plays[best_i] = best_play;
-				okey_solution.okey -= 2;
-			}
-			AddBest(okey_solution);
-		}
-
 		// 1 okey and 1 okey
 		{
 			int best_i1 = -1, best_i2 = -1;
@@ -150,15 +125,40 @@ void OKeySolver::Evaluate(const Solution &solution)
 			}
 
 			Solution okey_solution(solution);
-			if (best_score_up1 > 0)
+			if ( best_score_up1 > 0 )
 			{
 				okey_solution.plays[best_i1] = best_play1;
 				okey_solution.okey -= 1;
 			}
-			if (best_score_up2 > 0)
+			if ( best_score_up2 > 0 )
 			{
 				okey_solution.plays[best_i2] = best_play2;
 				okey_solution.okey -= 1;
+			}
+			AddBest(okey_solution);
+		}
+
+		// 2 okey
+		{
+			int best_i = -1;
+			int best_score_up = 0;
+			Play best_play;
+			for ( size_t i = 0; i < solution.plays.size(); ++i )
+			{
+				Play play = solution.plays[i];
+				int score_up = MakeBestPlay(play, 2);
+				if ( score_up > best_score_up )
+				{
+					best_i = i;
+					best_score_up = score_up;
+					best_play = play;
+				}
+			}
+			Solution okey_solution(solution);
+			if ( best_score_up > 0 )
+			{
+				okey_solution.plays[best_i] = best_play;
+				okey_solution.okey -= 2;
 			}
 			AddBest(okey_solution);
 		}
@@ -184,7 +184,7 @@ void OKeySolver::Evaluate(const Solution &solution)
 			}
 
 			Solution okey_solution(solution);
-			if (best_score_up1 > 0)
+			if ( best_score_up1 > 0 )
 			{
 				okey_solution.plays[best_i1] = best_play1;
 				okey_solution.okey -= 1;
@@ -201,7 +201,7 @@ void OKeySolver::Evaluate(const Solution &solution)
 int OKeySolver::Score(const Play& play)
 {
 	int score = 0;
-	if (play.count >= 3)
+	if ( play.count >= 3 )
 	{
 		if ( play.interval )
 			score = (play.min + play.max) * play.count / 2;

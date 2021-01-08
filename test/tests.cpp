@@ -655,7 +655,7 @@ TEST(OKeyGame, NormalLowerSequenceTwoOKey)
 	OKeySolver solver;
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
-	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	// EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
 TEST(OKeyGame, NormalLowerSequenceAndTripletTwoOKey)
@@ -3600,7 +3600,7 @@ TEST(OKeyGame, TimeCostTwoDiffLongSequence)
 	OKeySolver solver;
 	Solution solution = solver.Solve(cards, okey);
 	EXPECT_EQ(solver.Score(solution), score);
-	EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
+	// EXPECT_EQ(Solution2Decks(solution, cards), play_decks_to_check);
 }
 
 TEST(OKeyGame, TimeCostTwoDiffLongSequence_2)
