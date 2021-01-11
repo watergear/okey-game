@@ -100,6 +100,7 @@ private:
 
 	Solution best_score_solution;
 	int best_score;
+	int best_count_in_best_score;
 	
 	Solution best_count_solution;
 	int best_count;

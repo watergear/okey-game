@@ -238,14 +238,16 @@ bool OKeySolver::AddBest(const Solution &solution)
 	bool add_best = false;
 
 	int score = Score(solution);
-	if ( score > best_score )
+	int count = Count(solution);
+	
+	if ( score > best_score || (score == best_score && count > best_count_in_best_score) )
 	{
 		best_score = score;
+		best_count_in_best_score = count;
 		best_score_solution = solution;
 		add_best = true;
 	}
 
-	int count = Count(solution);
 	if ( count > best_count || (count == best_count && score > best_score_in_best_count) )
 	{
 		best_count = count;
@@ -709,6 +711,7 @@ Solution OKeySolver::Solve(const Deck &cards, int okey)
 	best_score_solution.plays.clear();
 	best_score_solution.okey = 0;
 	best_score = 0;
+	best_count_in_best_score = 0;
 	best_count_solution.plays.clear();
 	best_count_solution.okey = 0;
 	best_count = 0;
